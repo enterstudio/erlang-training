@@ -3,7 +3,7 @@
   [
     fac/1, len/1, tail_fac/1, tail_len/1, duplicate/2, tail_duplicate/2,
     reverse/1, tail_reverse/1, sublist/2, tail_sublist/2, zip/2, lenient_zip/2,
-    tail_zip/2
+    tail_zip/2, tail_lenient_zip/2
   ]
 ).
 
@@ -68,3 +68,10 @@ tail_zip(X, Y) -> tail_reverse(tail_zip(X, Y, [])).
 tail_zip([], [], ZipList) -> ZipList;
 tail_zip([X|Xs], [Y|Ys], ZipList) ->
   tail_zip(Xs, Ys, [{X, Y}|ZipList]).
+
+tail_lenient_zip(X, Y) -> tail_reverse(tail_lenient_zip(X, Y, [])).
+
+tail_lenient_zip([], _, ZipList) -> ZipList;
+tail_lenient_zip(_, [], ZipList) -> ZipList;
+tail_lenient_zip([X|Xs], [Y|Ys], ZipList) ->
+  tail_lenient_zip(Xs, Ys, [{X, Y}|ZipList]).
