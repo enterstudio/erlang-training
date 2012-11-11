@@ -39,3 +39,9 @@ black_knight(Attack) when is_function(Attack, 0) ->
   end.
 
 talk() -> "blah blah".
+
+catcher(X,Y) ->
+  case catch X/Y of
+    {'EXIT', {badarith, _}} -> "uh oh";
+    N -> N
+  end.
