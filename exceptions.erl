@@ -45,3 +45,6 @@ catcher(X,Y) ->
     {'EXIT', {badarith, _}} -> "uh oh";
     N -> N
   end.
+
+one_or_two(1) -> return;
+one_or_two(2) -> throw(return).
