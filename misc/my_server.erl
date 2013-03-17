@@ -3,7 +3,7 @@
 
 call(Pid, Msg) ->
   Ref = erlang:monitor(process, Pid),
-  Pid ! {self(), Ref, Msg},
+  Pid ! {sync, self(), Ref, Msg},
   receive
     {Ref, Reply} ->
       erlang:demonitor(Ref, [flush]),
