@@ -25,3 +25,6 @@ loop(Module, State) ->
     {sync, Pid, Ref, Msg} ->
       loop(Module, Module:handle_call(Msg, {Pid, Ref}, State))
   end.
+
+reply({Pid, Ref}, Reply) ->
+  Pid ! {Ref, Reply}.
