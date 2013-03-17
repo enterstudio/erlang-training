@@ -13,3 +13,7 @@ call(Pid, Msg) ->
   after 5000 ->
     erlang:error(timeout)
   end.
+
+cast(Pid, Msg) ->
+  Pid ! {async, Msg},
+  ok.
