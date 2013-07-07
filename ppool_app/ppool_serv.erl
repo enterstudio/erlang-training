@@ -34,3 +34,17 @@ async_queue(Name, Args) ->
 
 stop(Name) ->
   gen_server:call(Name, stop).
+
+init({Limit, MFA, Sup}) ->
+  %% We need to find the Pid of the worker supervisor from here,
+  %% but alas, this would be calling the supervisor while it waits for us!
+  self() ! {start_worker_supervisor, Sup, MFA},
+  {ok, #state{limit=Limit, refs=gb_sets:empty()}}.
+
+handle_info({start_worker_supervisor, Sup, MFA}, S=#state{}) ->
+  {ok, Pid} = supervisor:start_child(Sup, ?SPEC(MFA)),
+  link(Pid),
+  {noreply, S#state{sup=Pid}};
+handle_info(Msg, State) ->
+  io:format("Unknown msg: ~p~n", [Msg]),
+  {noreply, State}.
