@@ -3,6 +3,15 @@
 -export([start/4, start_link/4, run/2, sync_queue/2, async_queue/2, stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
 
+%% The friendly supervisor is started dynamically!
+-define(SPEC(MFA),
+  {worker_sup,
+    {ppool_worker_sup, start_link, [MFA]},
+    temporary,
+    10000,
+    supervisor,
+    [ppool_worker_sup]}).
+
 start(Name, Limit, Sup, MFA) when is_atom(Name), is_integer(Limit) ->
   gen_server:start({local, Name}, ?MODULE, {Limit, MFA, Sup}, []).
 
