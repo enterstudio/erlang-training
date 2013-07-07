@@ -68,6 +68,14 @@ handle_cast({async, Args}, S=#state{limit=N, queue=Q}) when N =< 0 ->
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
+handle_info({'DOWN', Ref, process, _Pid, _}, S=#state{refs=Refs}) ->
+  io:format("received down msg~n"),
+  case gb_sets:is_element(Ref, Refs) of
+    true ->
+      handle_down_worker(Ref, S);
+    false -> %% Not our responsibility
+      {noreply, S}
+  end;
 handle_info({start_worker_supervisor, Sup, MFA}, S=#state{}) ->
   {ok, Pid} = supervisor:start_child(Sup, ?SPEC(MFA)),
   link(Pid),
@@ -75,3 +83,20 @@ handle_info({start_worker_supervisor, Sup, MFA}, S=#state{}) ->
 handle_info(Msg, State) ->
   io:format("Unknown msg: ~p~n", [Msg]),
   {noreply, State}.
+
+handle_down_worker(Ref, S=#state{limit=L, sup=Sup, refs=Refs}) ->
+  case queue:out(S#state.queue) of
+    {{value, {From, Args}}, Q} ->
+      {ok, Pid} = supervisor:start_child(Sup, Args),
+      NewRef = erlang:monitor(process, Pid),
+      NewRefs = gb_sets:insert(NewRef, gb_sets:delete(Ref, Refs)),
+      gen_server:reply(From, {ok, Pid}),
+      {noreply, S#state{refs=NewRefs, queue=Q}};
+    {{value, Args}, Q} ->
+      {ok, Pid} = supervisor:start_child(Sup, Args),
+      NewRef = erlang:monitor(process, Pid),
+      NewRefs = gb_sets:insert(NewRef, gb_sets:delete(Ref, Refs)),
+      {noreply, S#state{refs=NewRefs, queue=Q}};
+    {empty, _} ->
+      {noreply, S#state{limit=L+1, refs=gb_sets:delete(Ref, Refs)}}
+  end.
