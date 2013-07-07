@@ -12,6 +12,11 @@
     supervisor,
     [ppool_worker_sup]}).
 
+-record(state, {limit=0,
+    sup,
+    refs,
+    queue=queue:new()}).
+
 start(Name, Limit, Sup, MFA) when is_atom(Name), is_integer(Limit) ->
   gen_server:start({local, Name}, ?MODULE, {Limit, MFA, Sup}, []).
 
