@@ -100,3 +100,6 @@ handle_down_worker(Ref, S=#state{limit=L, sup=Sup, refs=Refs}) ->
     {empty, _} ->
       {noreply, S#state{limit=L+1, refs=gb_sets:delete(Ref, Refs)}}
   end.
+
+code_change(_OldVsn, State, _Extra) ->
+  {ok, State}.
