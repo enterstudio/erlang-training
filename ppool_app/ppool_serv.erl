@@ -41,6 +41,23 @@ init({Limit, MFA, Sup}) ->
   self() ! {start_worker_supervisor, Sup, MFA},
   {ok, #state{limit=Limit, refs=gb_sets:empty()}}.
 
+handle_call({run, Args}, _From, S=#state{limit=N, sup=Sup, refs=R}) when N > 0 ->
+  {ok, Pid} = supervisor:start_child(Sup, Args),
+  Ref = erlang:monitor(process, Pid),
+  {reply, {ok, Pid}, S#state{limit=N-1, refs=gb_sets:add(Ref, R)}};
+handle_call({run, _Args}, _From, S=#state{limit=N}) when N =< 0 ->
+  {reply, noalloc, S};
+handle_call({sync, Args}, _From, S=#state{limit=N, sup=Sup, refs=R}) when N > 0 ->
+  {ok, Pid} = supervisor:start_child(Sup, Args),
+  Ref = erlang:monitor(process, Pid),
+  {reply, {ok, Pid}, S#state{limit=N-1, refs=gb_sets:add(Ref, R)}};
+handle_call({sync, Args}, From, S=#state{queue=Q}) ->
+  {noreply, S#state{queue=queue:in({From, Args}, Q)}};
+handle_call(stop, _From, State) ->
+  {stop, normal, ok, State};
+handle_call(_Msg, _From, State) ->
+  {noreply, State}.
+
 handle_info({start_worker_supervisor, Sup, MFA}, S=#state{}) ->
   {ok, Pid} = supervisor:start_child(Sup, ?SPEC(MFA)),
   link(Pid),
