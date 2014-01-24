@@ -1,6 +1,7 @@
 {application, erlcount,
  [
   {vsn, "1.0.0"},
+  {description, "Run regular expressions on Erlang source files"},
   {modules, [erlcount, erlcount_sup, erlcount_lib,
               erlcount_dispatch, erlcount_counter]},
   {applications, [ppool]},
