@@ -4,9 +4,9 @@
 -export([init_per_suite/1, end_per_suite/1,
          init_per_test_case/2, end_per_test_case/2,
          all/0]).
--export([add_service/1, friend_by_name/1, friend_with_services/1]).
+-export([add_service/1, friend_by_name/1, friend_with_services/1, friend_by_expertise/1]).
 
-all() -> [add_service, friend_by_name, friend_with_services].
+all() -> [add_service, friend_by_name, friend_with_services, friend_by_expertise].
 
 init_per_suite(Config) ->
   Priv = ?config(priv_dir, Config),
@@ -74,3 +74,13 @@ friend_with_services(_Config) ->
    [{from, "Don Corleone", {1949, 2, 14}, "Increased business"},
     {to, "Don Corleone", {1949, 12, 25}, "Gave a Christmas gift"}]
   } = mafiapp:friend_by_name("Someone").
+
+friend_by_expertise(_Config) ->
+  ok = mafiapp:add_friend("A Red Panda",
+                          [{location, "in a zoo"}],
+                          [animal, cute],
+                          climbing),
+  [{"A Red Panda",
+    _Contact, _Info, climbing,
+    _Services}] = mafiapp:friend_by_expertise(climbing),
+  [] = mafiapp:friend_by_expertise(make_ref()).

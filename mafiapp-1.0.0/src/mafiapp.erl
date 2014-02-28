@@ -4,7 +4,7 @@
 
 -export([install/1]).
 -export([start/2, stop/1]).
--export([add_friend/4, add_service/4, friend_by_name/1]).
+-export([add_friend/4, add_service/4, friend_by_name/1, friend_by_expertise/1]).
 
 -record(mafiapp_friends, {name,
                           contact=[],
@@ -67,6 +67,18 @@ friend_by_name(Name) ->
             [] ->
               undefined
           end
+      end,
+  mnesia:activity(transaction, F).
+
+friend_by_expertise(Expertise) ->
+  Pattern = #mafiapp_friends{_ = '_',
+                             expertise = Expertise},
+  F = fun() ->
+          Res = mnesia:match_object(Pattern),
+          [{Name, C, I, Expertise, find_services(Name)} ||
+           #mafiapp_friends{name=Name,
+                            contact=C,
+                            info=I} <- Res]
       end,
   mnesia:activity(transaction, F).
 
