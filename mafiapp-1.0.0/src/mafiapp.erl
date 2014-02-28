@@ -3,6 +3,7 @@
 
 -export([install/1]).
 -export([start/2, stop/1]).
+-export([add_friend/4]).
 
 -record(mafiapp_friends, {name,
                           contact=[],
@@ -32,3 +33,12 @@ start(normal, []) ->
   mafiapp_sup:start_link().
 
 stop(_) -> ok.
+
+add_friend(Name, Contact, Info, Expertise) ->
+  F = fun() ->
+          mnesia:write(#mafiapp_friends{name=Name,
+                                        contact=Contact,
+                                        info=Info,
+                                        expertise=Expertise})
+      end,
+  mnesia:activity(transaction, F).
