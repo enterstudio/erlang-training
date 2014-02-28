@@ -1,4 +1,5 @@
 -module(mafiapp).
+-include_lib("stdlib/include/ms_transform.hrl").
 -behavior(application).
 
 -export([install/1]).
@@ -73,4 +74,12 @@ friend_by_name(Name) ->
 
 %% PRIVATE FUNCTIONS
 
-find_services(_Name) -> undefined.
+find_services(Name) ->
+  Match = ets:fun2ms(
+            fun(#mafiapp_services{from=From, to=To, date=D, description=Desc}) when From =:= Name ->
+                {to, To, D, Desc};
+               (#mafiapp_services{from=From, to=To, date=D, description=Desc}) when To =:= Name ->
+                {from, From, D, Desc}
+            end
+           ),
+  mnesia:select(mafiapp_services, Match).
