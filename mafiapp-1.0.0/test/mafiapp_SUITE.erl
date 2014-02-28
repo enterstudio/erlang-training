@@ -21,6 +21,9 @@ end_per_suite(_Config) ->
   ok.
 
 init_per_test_case(add_service, Config) ->
+  Config;
+init_per_test_case(_, Config) ->
+  ok = mafiapp:add_friend("Don Corleone", [], [boss], boss),
   Config.
 
 end_per_test_case(_, _Config) ->
