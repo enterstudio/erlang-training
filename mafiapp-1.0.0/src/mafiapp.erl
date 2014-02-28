@@ -13,7 +13,7 @@
 
 install(Nodes) ->
   ok = mnesia:create_schema(Nodes),
-  application:start(mnesia),
+  rpc:multicall(Nodes, application, start, [mnesia]),
   mnesia:create_table(mafiapp_friends,
                       [{attributes, record_info(fields, mafiapp_friends)},
                        {index, [#mafiapp_friends.expertise]},
@@ -23,4 +23,4 @@ install(Nodes) ->
                        {index, [#mafiapp_services.to]},
                        {disc_copies, Nodes},
                        {type, bag}]),
-  application:stop(mnesia).
+  rpc:multicall(Nodes, application, stop, [mnesia]).
