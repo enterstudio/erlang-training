@@ -1,6 +1,8 @@
 -module(mafiapp).
+-behavior(application).
 
 -export([install/1]).
+-export([start/2, stop/1]).
 
 -record(mafiapp_friends, {name,
                           contact=[],
@@ -24,3 +26,9 @@ install(Nodes) ->
                        {disc_copies, Nodes},
                        {type, bag}]),
   rpc:multicall(Nodes, application, stop, [mnesia]).
+
+start(normal, []) ->
+  mnesia:wait_for_tables([mafiapp_friends, mafiapp_services], 5000),
+  mafiapp_sup:start_link().
+
+stop(_) -> ok.
