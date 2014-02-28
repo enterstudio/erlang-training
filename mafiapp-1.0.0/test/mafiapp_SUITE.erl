@@ -4,9 +4,9 @@
 -export([init_per_suite/1, end_per_suite/1,
          init_per_test_case/2, end_per_test_case/2,
          all/0]).
--export([add_service/1]).
+-export([add_service/1, friend_by_name/1]).
 
-all() -> [add_service].
+all() -> [add_service, friend_by_name].
 
 init_per_suite(Config) ->
   Priv = ?config(priv_dir, Config),
@@ -46,3 +46,16 @@ add_service(_Config) ->
   ok = mafiapp:add_service("Alan Parsons", "Don Corleone",
                            {1973, 3, 1},
                            "Helped release a Pink Floyd album").
+
+friend_by_name(_Config) ->
+  ok = mafiapp:add_friend("Pete Cityshend",
+                          [{phone, "418-542-3000"},
+                           {email, "quadrophonia@example.org"},
+                           {other, "yell real loud"}],
+                          [{born, {1945, 5, 19}},
+                           musician, popular],
+                          music),
+  {"Pete Cityshend",
+   _Contact, _Info, music,
+   _Services} = mafiapp:friend_by_name("Pete Cityshend"),
+  undefined = mafiapp:friend_by_name(make_ref()).

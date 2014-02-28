@@ -3,7 +3,7 @@
 
 -export([install/1]).
 -export([start/2, stop/1]).
--export([add_friend/4, add_service/4]).
+-export([add_friend/4, add_service/4, friend_by_name/1]).
 
 -record(mafiapp_friends, {name,
                           contact=[],
@@ -57,3 +57,20 @@ add_service(From, To, Date, Description) ->
           end
       end,
   mnesia:activity(transaction, F).
+
+friend_by_name(Name) ->
+  F = fun() ->
+          case mnesia:read({mafiapp_friends, Name}) of
+            [#mafiapp_friends{contact=C, info=I, expertise=E}] ->
+              {Name, C, I, E, find_services(Name)};
+            [] ->
+              undefined
+          end
+      end,
+  mnesia:activity(transaction, F).
+
+
+
+%% PRIVATE FUNCTIONS
+
+find_services(_Name) -> undefined.
