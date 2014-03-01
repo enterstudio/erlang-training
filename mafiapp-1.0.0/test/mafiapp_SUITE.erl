@@ -2,7 +2,7 @@
 -include_lib("common_test/include/ct.hrl").
 
 -export([init_per_suite/1, end_per_suite/1,
-         init_per_test_case/2, end_per_test_case/2,
+         init_per_testcase/2, end_per_testcase/2,
          all/0]).
 -export([add_service/1, friend_by_name/1, friend_with_services/1, friend_by_expertise/1]).
 
@@ -20,13 +20,13 @@ end_per_suite(_Config) ->
   application:stop(mnesia),
   ok.
 
-init_per_test_case(add_service, Config) ->
+init_per_testcase(add_service, Config) ->
   Config;
-init_per_test_case(_, Config) ->
+init_per_testcase(_, Config) ->
   ok = mafiapp:add_friend("Don Corleone", [], [boss], boss),
   Config.
 
-end_per_test_case(_, _Config) ->
+end_per_testcase(_, _Config) ->
   ok.
 
 %% Services can go both way: from a friend to the boss, or
