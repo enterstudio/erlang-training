@@ -5,8 +5,9 @@
          init_per_testcase/2, end_per_testcase/2,
          all/0]).
 -export([add_service/1, friend_by_name/1, friend_with_services/1, friend_by_expertise/1]).
+-export([accounts/1]).
 
-all() -> [add_service, friend_by_name, friend_with_services, friend_by_expertise].
+all() -> [add_service, friend_by_name, friend_with_services, friend_by_expertise, accounts].
 
 init_per_suite(Config) ->
   Priv = ?config(priv_dir, Config),
@@ -21,6 +22,9 @@ end_per_suite(_Config) ->
   ok.
 
 init_per_testcase(add_service, Config) ->
+  Config;
+init_per_testcase(accounts, Config) ->
+  ok = mafiapp:add_friend("Consigliere", [], [you], consigliere),
   Config;
 init_per_testcase(_, Config) ->
   ok = mafiapp:add_friend("Don Corleone", [], [boss], boss),
@@ -84,3 +88,26 @@ friend_by_expertise(_Config) ->
     _Contact, _Info, climbing,
     _Services}] = mafiapp:friend_by_expertise(climbing),
   [] = mafiapp:friend_by_expertise(make_ref()).
+
+accounts(_Config) ->
+  ok = mafiapp:add_friend("Gill Bates", [{email, "ceo@macrohard.com"}],
+                          [clever, rich], computers),
+  ok = mafiapp:add_service("Consigliere", "Gill Bates",
+                           {1985, 11, 20}, "Bought 15 copies of software"),
+  ok = mafiapp:add_service("Gill Bates", "Consigliere",
+                           {1986, 8, 17}, "Made computer faster"),
+  ok = mafiapp:add_friend("Pierre Gauthier", [{other, "city arena"}],
+                          [{job, "sports team GM"}], sports),
+  ok = mafiapp:add_service("Pierre Gauthier", "Consigliere",
+                           {2009, 6, 30}, "Took on a huge, bad contract"),
+  ok = mafiapp:add_friend("Wayne Gretzky", [{other, "Canada"}],
+                          [{born, {1961, 1, 26}}, "hockey legend"], hockey),
+  ok = mafiapp:add_service("Consigliere", "Wayne Gretzky",
+                           {1964, 1, 26}, "Gave first pair of ice skates"),
+  %% Wayne Gretzky owes us something so the debt is negative
+  %% Gill Bates are equal
+  %% Gauthier is owed a service
+  [{-1, "Wayne Gretzky"},
+   {0, "Gill Bates"},
+   {1, "Pierre Gauthier"}] = mafiapp:debts("Consigliere"),
+  [{1, "Consigliere"}] = mafiapp:debts("Wayne Gretzky").

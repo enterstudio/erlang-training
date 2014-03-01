@@ -5,6 +5,7 @@
 -export([install/1]).
 -export([start/2, stop/1]).
 -export([add_friend/4, add_service/4, friend_by_name/1, friend_by_expertise/1]).
+-export([debts/1]).
 
 -record(mafiapp_friends, {name,
                           contact=[],
@@ -81,6 +82,21 @@ friend_by_expertise(Expertise) ->
                             info=I} <- Res]
       end,
   mnesia:activity(transaction, F).
+
+debts(Name) ->
+  Match = ets:fun2ms(
+            fun(#mafiapp_services{from=From, to=To}) when From =:= Name ->
+                {To, -1};
+               (#mafiapp_services{from=From, to=To}) when To =:= Name ->
+                {From, 1}
+            end),
+  F = fun() -> mnesia:select(mafiapp_services, Match) end,
+  Dict = lists:foldl(fun({Person,N}, Dict) ->
+                         dict:update(Person, fun(X) -> X + N end, N, Dict)
+                     end,
+                     dict:new(),
+                     mnesia:activity(transaction, F)),
+  lists:sort([{V,K} || {K,V} <- dict:to_list(Dict)]).
 
 
 
