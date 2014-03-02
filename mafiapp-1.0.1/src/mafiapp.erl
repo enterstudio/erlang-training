@@ -91,19 +91,20 @@ friend_by_expertise(Expertise) ->
   mnesia:activity(transaction, F).
 
 debts(Name) ->
-  Match = ets:fun2ms(
-            fun(#mafiapp_services{from=From, to=To}) when From =:= Name ->
-                {To, -1};
-               (#mafiapp_services{from=From, to=To}) when To =:= Name ->
-                {From, 1}
-            end),
-  F = fun() -> mnesia:select(mafiapp_services, Match) end,
-  Dict = lists:foldl(fun({Person,N}, Dict) ->
-                         dict:update(Person, fun(X) -> X + N end, N, Dict)
-                     end,
-                     dict:new(),
-                     mnesia:activity(transaction, F)),
-  lists:sort([{V,K} || {K,V} <- dict:to_list(Dict)]).
+  F = fun() ->
+          QH = qlc:q(
+                 [if Name =:= To -> {From,1};
+                     Name =:= From -> {To,-1}
+                  end || #mafiapp_services{from=From, to=To} <-
+                         mnesia:table(mafiapp_services),
+                         Name =:= To orelse Name =:= From]),
+          qlc:fold(fun({Person,N}, Dict) ->
+                       dict:update(Person, fun(X) -> X + N end, N, Dict)
+                   end,
+                   dict:new(),
+                   QH)
+      end,
+  lists:sort([{V,K} || {K,V} <- dict:to_list(mnesia:activity(transaction, F))]).
 
 add_enemy(Name, Info) ->
   F = fun() -> mnesia:write(#mafiapp_enemies{name=Name, info=Info}) end,
