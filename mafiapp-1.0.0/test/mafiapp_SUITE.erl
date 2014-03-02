@@ -5,9 +5,9 @@
          init_per_testcase/2, end_per_testcase/2,
          all/0]).
 -export([add_service/1, friend_by_name/1, friend_with_services/1, friend_by_expertise/1]).
--export([accounts/1]).
+-export([accounts/1, enemies/1]).
 
-all() -> [add_service, friend_by_name, friend_with_services, friend_by_expertise, accounts].
+all() -> [add_service, friend_by_name, friend_with_services, friend_by_expertise, accounts, enemies].
 
 init_per_suite(Config) ->
   Priv = ?config(priv_dir, Config),
@@ -111,3 +111,12 @@ accounts(_Config) ->
    {0, "Gill Bates"},
    {1, "Pierre Gauthier"}] = mafiapp:debts("Consigliere"),
   [{1, "Consigliere"}] = mafiapp:debts("Wayne Gretzky").
+
+enemies(_Config) ->
+  undefined = mafiapp:find_enemy("Edward"),
+  ok = mafiapp:add_enemy("Edward", [{bio, "Vampire"},
+                                    {comment, "He sucks (blood)"}]),
+  {"Edward", [{bio, "Vampire"},
+              {comment, "He sucks (blood)"}]} = mafiapp:find_enemy("Edward"),
+  ok = mafiapp:enemy_killed("Edward"),
+  undefined = mafiapp:find_enemy("Edward").
