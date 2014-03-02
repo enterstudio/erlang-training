@@ -1,5 +1,6 @@
 -module(mafiapp).
 -include_lib("stdlib/include/ms_transform.hrl").
+-include_lib("stdlib/include/qlc.hrl").
 -behavior(application).
 
 -export([install/1]).
@@ -78,14 +79,14 @@ friend_by_name(Name) ->
   mnesia:activity(transaction, F).
 
 friend_by_expertise(Expertise) ->
-  Pattern = #mafiapp_friends{_ = '_',
-                             expertise = Expertise},
   F = fun() ->
-          Res = mnesia:match_object(Pattern),
-          [{Name, C, I, Expertise, find_services(Name)} ||
-           #mafiapp_friends{name=Name,
-                            contact=C,
-                            info=I} <- Res]
+          qlc:eval(qlc:q(
+                     [{Name,C,I,E,find_services(Name)} ||
+                      #mafiapp_friends{name=Name,
+                                       contact=C,
+                                       info=I,
+                                       expertise=E} <- mnesia:table(mafiapp_friends),
+                      E =:= Expertise]))
       end,
   mnesia:activity(transaction, F).
 
