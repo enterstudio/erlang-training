@@ -5,7 +5,7 @@
 -export([install/1]).
 -export([start/2, stop/1]).
 -export([add_friend/4, add_service/4, friend_by_name/1, friend_by_expertise/1]).
--export([debts/1]).
+-export([debts/1, add_enemy/2]).
 
 -record(mafiapp_friends, {name,
                           contact=[],
@@ -103,6 +103,10 @@ debts(Name) ->
                      dict:new(),
                      mnesia:activity(transaction, F)),
   lists:sort([{V,K} || {K,V} <- dict:to_list(Dict)]).
+
+add_enemy(Name, Info) ->
+  F = fun() -> mnesia:write(#mafiapp_enemies{name=Name, info=Info}) end,
+  mnesia:activity(transaction, F).
 
 
 
