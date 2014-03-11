@@ -33,4 +33,4 @@ test() ->
   N = N3,
   true = empty(N3),
   false = empty(N2),
-  pop({fifo, [a|b], [e]}).
+  pop({fifo, [a, b], [e]}).
