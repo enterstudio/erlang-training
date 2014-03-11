@@ -20,7 +20,9 @@ pop({fifo, In, [H|T]}) ->
   {H, {fifo, In, T}}.
 
 -spec empty({fifo, [], []}) -> true;
-           ({fifo, list(), list()}) -> false.
+           ({fifo, nonempty_list(), []}) -> false;
+           ({fifo, [], nonempty_list()}) -> false;
+           ({fifo, nonempty_list(), nonempty_list()}) -> false.
 empty({fifo, [], []}) -> true;
 empty({fifo, _, _}) -> false.
 
